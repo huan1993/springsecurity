@@ -92,7 +92,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				.withUser("admin").password("admin").roles("ADMIN");//
 	}
 
-	/** 自定义决策管理器 */
+	/**
+	 * 自定义决策管理器
+	 */
 	@Bean
 	public AccessDecisionManager accessDecisionManager() {
 		List<AccessDecisionVoter<? extends Object>> decisionVoters = new ArrayList<AccessDecisionVoter<? extends Object>>();
