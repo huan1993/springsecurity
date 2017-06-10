@@ -30,7 +30,7 @@ public class CustormSecurityDecision {
 		urlAuths.put("/xx", Arrays.asList(new SimpleGrantedAuthority("A001B001")));
 		urlAuths.put("/xx/x", Arrays.asList(new SimpleGrantedAuthority("A001B001")));
 		urlAuths.put("/yy", Arrays.asList(new SimpleGrantedAuthority("A001B001")));
-		urlAuths.put("/zz", Arrays.asList(new SimpleGrantedAuthority("A001B001")));
+		urlAuths.put("/zz/**", Arrays.asList(new SimpleGrantedAuthority("A001B001")));
 	}
 	AntPathMatcher pathMatcher = new AntPathMatcher();
 
