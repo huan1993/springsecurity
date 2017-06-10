@@ -4,7 +4,8 @@ springboot整合spring security的学习工程
 项目采用jdk8
 使用spring io 管理jar包
 父项目中的依赖
-<pre><code>
+
+```xml
 <dependencyManagement>
   <dependencies>
     <dependency>
@@ -16,4 +17,4 @@ springboot整合spring security的学习工程
     </dependency>
   </dependencies>
 </dependencyManagement>
-</code> </pre>
+```
