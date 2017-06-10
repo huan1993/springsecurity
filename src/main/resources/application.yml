@@ -1,0 +1,6 @@
+server:
+  port: 9080
+  context-path: /admin
+  session:
+    timeout: 180 #30分钟 session超时
+    
