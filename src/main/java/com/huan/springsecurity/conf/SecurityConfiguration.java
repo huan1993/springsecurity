@@ -1,9 +1,16 @@
 package com.huan.springsecurity.conf;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.servlet.Filter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.access.AccessDecisionManager;
+import org.springframework.security.access.AccessDecisionVoter;
+import org.springframework.security.access.expression.SecurityExpressionHandler;
+import org.springframework.security.access.vote.AffirmativeBased;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -13,6 +20,9 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.FilterInvocation;
+import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
+import org.springframework.security.web.access.expression.WebExpressionVoter;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -35,6 +45,8 @@ import com.huan.springsecurity.security.UserDetailServiceImpl;
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true) // 拦截方法
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+	@Autowired
+	private AuthenticationManager authenticationManager;
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
@@ -62,9 +74,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				.and()//
 				.csrf().disable()// 禁用csrf
 				.authorizeRequests()//
+				.accessDecisionManager(accessDecisionManager())// 自定义决策管理器
 				.antMatchers("/hi", "/login.html", "/auth", "/index.html").permitAll()// 可以匿名访问
 				// .anyRequest().authenticated(); // 需要认证才可以进行访问
-				.anyRequest().access("@custormSecurityDecision.decision(authentication,request)");
+				.anyRequest().access("@custormSecurityDecision.decision(authentication,request)")// 自定义授权策略
+				.and()//
+				.exceptionHandling()//
+				.accessDeniedPage("/403.html"); // 没有权限访问
 	}
 
 	@Override
@@ -76,8 +92,27 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				.withUser("admin").password("admin").roles("ADMIN");//
 	}
 
-	@Autowired
-	private AuthenticationManager authenticationManager;
+	/** 自定义决策管理器 */
+	@Bean
+	public AccessDecisionManager accessDecisionManager() {
+		List<AccessDecisionVoter<? extends Object>> decisionVoters = new ArrayList<AccessDecisionVoter<? extends Object>>();
+		decisionVoters.add(webExpressionVoter());
+		return new AffirmativeBased(decisionVoters); // 有一票通过则为通过
+	}
+
+	/** 表达式控制器 */
+	@Bean
+	public SecurityExpressionHandler<FilterInvocation> expressionHandler() {
+		return new DefaultWebSecurityExpressionHandler();
+	}
+
+	/** 表达式投票器 */
+	@Bean
+	public AccessDecisionVoter<FilterInvocation> webExpressionVoter() {
+		WebExpressionVoter voter = new WebExpressionVoter();
+		voter.setExpressionHandler(expressionHandler());
+		return voter;
+	}
 
 	@Bean
 	public CustormSecurityDecision custormSecurityDecision() {

@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,7 +36,6 @@ public class CustormSecurityDecision {
 
 	public boolean decision(Authentication authentication, HttpServletRequest request) {
 		String uri = request.getRequestURI().replace(request.getContextPath(), "");
-
 		for (Entry<String, List<GrantedAuthority>> entry : urlAuths.entrySet()) {
 			if (pathMatcher.match(entry.getKey(), uri)) {
 				Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
@@ -44,13 +44,16 @@ public class CustormSecurityDecision {
 						return true;
 					}
 				}
+				return false;
 			}
 		}
 
-		if (authentication.isAuthenticated()) {
+		// 访问的是没有配置权限的功能，必须要登录用户才可以进行访问
+		if (authentication.isAuthenticated() && !Objects.equals("anonymousUser", authentication.getPrincipal())) {
 			return true;
 		}
 
+		// 没有登录，直接返回false
 		return false;
 	}
 
