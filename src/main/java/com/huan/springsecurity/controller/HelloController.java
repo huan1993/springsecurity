@@ -30,7 +30,7 @@ public class HelloController {
 	@GetMapping("world")
 	@PreAuthorize("hasRole('ADMIN')")
 	public String world() {
-		return "hello world";
+		return "拥有ADMIN的角色才可以访问";
 	}
 
 	@PreAuthorize("hasRole('xxx')")
