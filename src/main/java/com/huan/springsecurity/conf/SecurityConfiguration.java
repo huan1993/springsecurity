@@ -15,6 +15,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -49,6 +50,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	private AuthenticationManager authenticationManager;
 
 	@Override
+	public void configure(WebSecurity web) throws Exception {
+		web.ignoring().antMatchers("/static/**"); // 不拦截静态资源
+		web.ignoring().antMatchers("/css/**"); // 不拦截静态资源
+	}
+
+	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.formLogin()//
 				.loginPage("/login.html") // 自定义登录界面
@@ -57,10 +64,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				.passwordParameter("pass_word") // 登录表单密码的name的值
 				.successHandler(custormAuthenticationSuccessHandler())//
 				.failureHandler(custormAuthenticationFailureHandler()).and()// 登录成功后的处理
-
 				// 配置了这个拦截器之后上方配置的属性无效
 				.addFilterAt(loginFilter(), UsernamePasswordAuthenticationFilter.class) // 替换掉spring security中的拦截器
-
+				.userDetailsService(createUserDetailService())//
 				.sessionManagement()//
 				.maximumSessions(1)// 同一个账号同时只可一个用户登录
 				.maxSessionsPreventsLogin(true)// 后登录的不可登入系统
@@ -75,7 +81,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				.csrf().disable()// 禁用csrf
 				.authorizeRequests()//
 				.accessDecisionManager(accessDecisionManager())// 自定义决策管理器
-				.antMatchers("/hi", "/login.html", "/auth", "/index.html").permitAll()// 可以匿名访问
+				.antMatchers("/hi", "/login.html", "/auth").permitAll()// 可以匿名访问
 				// .anyRequest().authenticated(); // 需要认证才可以进行访问
 				.anyRequest().access("@custormSecurityDecision.decision(authentication,request)")// 自定义授权策略
 				.and()//
