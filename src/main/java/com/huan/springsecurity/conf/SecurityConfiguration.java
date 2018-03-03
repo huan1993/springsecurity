@@ -12,6 +12,7 @@ import org.springframework.security.access.AccessDecisionVoter;
 import org.springframework.security.access.expression.SecurityExpressionHandler;
 import org.springframework.security.access.vote.AffirmativeBased;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,6 +22,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.FilterInvocation;
 import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
 import org.springframework.security.web.access.expression.WebExpressionVoter;
@@ -28,6 +30,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.web.client.RestTemplate;
 
 import com.huan.springsecurity.security.CustormAuthenticationFailureHandler;
 import com.huan.springsecurity.security.CustormAuthenticationSuccessHandler;
@@ -35,6 +38,7 @@ import com.huan.springsecurity.security.CustormLogoutHandler;
 import com.huan.springsecurity.security.CustormSecurityDecision;
 import com.huan.springsecurity.security.LoginFilter;
 import com.huan.springsecurity.security.UserDetailServiceImpl;
+import com.huan.springsecurity.social.qq.QQLoginConfigure;
 
 /**
  * spring security 的java配置
@@ -55,9 +59,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 		web.ignoring().antMatchers("/css/**"); // 不拦截静态资源
 	}
 
+	@Bean
+	public SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> qqLoginConfigure() {
+		return new QQLoginConfigure();
+	}
+
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.formLogin()//
+		http.apply(qqLoginConfigure()).and()//
+				.formLogin()//
 				.loginPage("/login.html") // 自定义登录界面
 				.loginProcessingUrl("/auth") // 处理登录的请求
 				.usernameParameter("user_name") // 登录表单的用户名的name的值
@@ -96,6 +106,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				.and()//
 				.inMemoryAuthentication()//
 				.withUser("admin").password("admin").roles("ADMIN");//
+	}
+
+	@Bean
+	public RestTemplate restTemplate() {
+		return new RestTemplate();
 	}
 
 	/**

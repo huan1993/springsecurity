@@ -23,6 +23,7 @@ public class CustormAuthenticationSuccessHandler extends SavedRequestAwareAuthen
 		// 清除最后一次的异常信息
 		clearAuthenticationAttributes(request);
 		System.out.println("登录成功。。。。");
+		request.getSession().setAttribute("name", ((User) authentication.getPrincipal()).getUsername());
 		getRedirectStrategy().sendRedirect(request, response, determineTargetUrl(request, response));
 	}
 

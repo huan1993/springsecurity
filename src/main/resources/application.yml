@@ -6,7 +6,8 @@ spring:
     url: jdbc:mysql://localhost:3306/huan
     driver-class-name: com.mysql.jdbc.Driver
 server:
-  port: 9080
-  context-path: /admin
+  port: 80
   session:
     timeout: 1800
+    
+    
